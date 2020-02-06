@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<gateway>
+
+    <current_gateway>{CHOSE ONE: payeezy || bluepay || card_connect || ipg}</current_gateway>
+
+    <payeezy>
+        <api_key>{API_KEY}</api_key>
+        <api_secret>{API_SECRET}</api_secret>
+        <auth_token>{AUTH_TOKEN}</auth_token>
+        <transarmor_token>{TA_TOKEN}</transarmor_token>
+        <zero_dollar_auth>FALSE</zero_dollar_auth>
+    </payeezy>
+
+    <bluepay>
+        <account_id>{ACCOUNT_ID}</account_id>
+        <secret_key>{SECRET_KEY}</secret_key>
+        <zero_dollar_auth>FALSE</zero_dollar_auth>
+    </bluepay>
+
+    <card_connect>
+        <api_user>{API_USER}</api_user>
+        <api_pass>{API_USER}</api_pass>
+        <merchant_id>{MERCHANT_ID}</merchant_id>
+        <zero_dollar_auth>FALSE</zero_dollar_auth>
+    </card_connect>
+
+    <ipg>
+        <api_key>{API_KEY}</api_key>
+        <api_secret>{API_SECRET}</api_secret>
+        <zero_dollar_auth>FALSE</zero_dollar_auth>
+    </ipg>
+
+</gateway>
+
