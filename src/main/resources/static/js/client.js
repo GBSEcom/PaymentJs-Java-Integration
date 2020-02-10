@@ -115,7 +115,7 @@ function authorizeSession(callback) {
         request = null;
     };
 
-    request.open("POST", "", true);
+    request.open("POST", "/auth", true);
     request.send();
 }
 
