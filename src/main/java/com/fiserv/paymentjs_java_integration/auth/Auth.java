@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class Auth {
 
@@ -17,11 +18,41 @@ public class Auth {
         return objectMapper.readTree(new File(GATEWAY_AND_HOST_CREDENTIALS_FILE_PATH));
     }
 
+    private void loadCredentials() throws IOException {
+        JsonNode config = this.loadConfig();
+
+        String host_name = config.findValue("host_name").toString();
+
+        String psjv2_api_key = config.findValue("pjsv2_api_key").toString();
+        String psjv2_secret_key = config.findValue("pjsv2_api_secret").toString();
+
+        String current_gateway = config.findValue("current_gateway").toString();
+
+        switch (current_gateway){
+            case "payeezy" :
+
+                break;
+            case "bluepay":
+
+                break;
+            case "card_connect":
+
+                break;
+            case "ipg":
+
+                break;
+
+            default:
+                //error;
+                break;
+        }
+
+    }
+
 
     public ResponseEntity<String> exe() throws IOException {
 
-        JsonNode config = this.loadConfig();
-        System.out.println(config.toPrettyString());
+       loadCredentials();
 
         return ResponseEntity.ok("{\"response\": \"It works \"}");
     }

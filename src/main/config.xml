@@ -6,10 +6,10 @@
 
         <host_name>cert.api.firstdata.com</host_name>
 
-        <credentials>
-            <api_key>{PAYMENTJS_V2 API_KEY}</api_key>
-            <api_secret>{PAYMENTJS_V2 API_SECRET}</api_secret>
-        </credentials>
+        <pjsv2_credentials>
+            <pjsv2_api_key>{PAYMENTJS_V2 API_KEY}</pjsv2_api_key>
+            <pjsv2_api_secret>{PAYMENTJS_V2 API_SECRET}</pjsv2_api_secret>
+        </pjsv2_credentials>
 
     </host>
 
@@ -25,11 +25,11 @@
             <zero_dollar_auth>FALSE</zero_dollar_auth>
         </payeezy>
 
-        <bluepay>
+        <bayeezy>
             <account_id>{ACCOUNT_ID}</account_id>
             <secret_key>{SECRET_KEY}</secret_key>
             <zero_dollar_auth>FALSE</zero_dollar_auth>
-        </bluepay>
+        </bayeezy>
 
         <card_connect>
             <api_user>{API_USER}</api_user>
