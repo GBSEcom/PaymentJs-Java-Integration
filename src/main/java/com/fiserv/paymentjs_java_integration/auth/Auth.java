@@ -7,7 +7,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Auth {
 
@@ -18,41 +19,37 @@ public class Auth {
         return objectMapper.readTree(new File(GATEWAY_AND_HOST_CREDENTIALS_FILE_PATH));
     }
 
-    private void loadCredentials() throws IOException {
+    private HashMap<String, JsonNode> loadCredentials() throws IOException {
+
         JsonNode config = this.loadConfig();
+        HashMap<String, JsonNode> map = new HashMap<String, JsonNode>();
 
-        String host_name = config.findValue("host_name").toString();
+        JsonNode current_gateway = config.findValue("current_gateway");
+        map.put("gateway", current_gateway);
+        map.put("host", config.findValue("host_name"));
+        map.put("pjsv2_credentials", config.findValue("credentials"));
+        map.put("gateway_config", config.findValue(current_gateway.toString().replaceAll("\"","")));
 
-        String psjv2_api_key = config.findValue("pjsv2_api_key").toString();
-        String psjv2_secret_key = config.findValue("pjsv2_api_secret").toString();
-
-        String current_gateway = config.findValue("current_gateway").toString();
-
-        switch (current_gateway){
-            case "payeezy" :
-
-                break;
-            case "bluepay":
-
-                break;
-            case "card_connect":
-
-                break;
-            case "ipg":
-
-                break;
-
-            default:
-                //error;
-                break;
-        }
-
+        return map;
     }
 
+    private String validateCredentials(HashMap<String, JsonNode> map){
+        for (Map.Entry<String, JsonNode> entry : map.entrySet()) {
+            if (null == entry.getValue()){
+                return entry.getKey();
+            }
+        }
+        return "Ok";
+    }
 
     public ResponseEntity<String> exe() throws IOException {
 
-       loadCredentials();
+        HashMap<String, JsonNode> config = this.loadCredentials();
+        String validation_response = this.validateCredentials(config);
+
+        if(!"Ok".equals(validation_response)){
+            System.out.println("Invalid credentials setup. Info: "+validation_response);
+        }
 
         return ResponseEntity.ok("{\"response\": \"It works \"}");
     }
