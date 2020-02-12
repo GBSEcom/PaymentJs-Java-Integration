@@ -16,10 +16,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Auth {
 
@@ -95,12 +92,14 @@ public class Auth {
         map.put("Nonce", Long.toString(nonce));
         map.put("Timestamp", Long.toString(timestamp));
         return map;
+
     }
 
-    public String post(HashMap<String, JsonNode> credentials) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+    public HttpURLConnection post(HashMap<String, JsonNode> credentials) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
 
         //API service URL
         String service_url = credentials.get("service_url").asText();
+
 
         //Json Payload
         JsonNode gateway_credentials = credentials.get("gateway_credentials");
@@ -119,22 +118,31 @@ public class Auth {
             wr.write(gateway_credentials.toString().getBytes(StandardCharsets.UTF_8));
         }
 
-        return connection.getResponseMessage();
+        return connection;
     }
 
     public ResponseEntity<String> exe() throws IOException, InvalidKeyException, NoSuchAlgorithmException {
 
+        //Load credentials from config.xml
         HashMap<String, JsonNode> credentials = this.loadCredentials();
+
+        //Validate credentials
         String validation_response = this.validateCredentials(credentials);
-
         if(!"Ok".equals(validation_response)){
-
-            //TODO: Throw error properly
-
             System.out.println("Invalid credentials setup. Info: "+validation_response);
+            return null;
         }
 
-        System.out.println(this.post(credentials));
+        //Send HTTP post request to payment.js server and check response
+        HttpURLConnection postResponse = this.post(credentials);
+        if (200 != postResponse.getResponseCode()){
+            System.out.println("HTTP post request failed. Info: "+postResponse.getResponseMessage());
+            return null;
+        }
+
+        //Get response headers from Payment.js server
+        Map<String, List<String>> response_headers = postResponse.getHeaderFields();
+
 
         return ResponseEntity.ok("{\"response\": \"It works \"}");
     }
