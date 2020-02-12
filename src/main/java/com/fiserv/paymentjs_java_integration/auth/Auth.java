@@ -92,12 +92,14 @@ public class Auth {
         map.put("Nonce", Long.toString(nonce));
         map.put("Timestamp", Long.toString(timestamp));
         return map;
+
     }
 
     public HttpURLConnection post(HashMap<String, JsonNode> credentials) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
 
         //API service URL
         String service_url = credentials.get("service_url").asText();
+
 
         //Json Payload
         JsonNode gateway_credentials = credentials.get("gateway_credentials");
@@ -140,6 +142,7 @@ public class Auth {
 
         //Get response headers from Payment.js server
         Map<String, List<String>> response_headers = postResponse.getHeaderFields();
+
 
         return ResponseEntity.ok("{\"response\": \"It works \"}");
     }
