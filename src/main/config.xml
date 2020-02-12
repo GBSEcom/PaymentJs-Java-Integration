@@ -25,6 +25,7 @@
         <current_gateway>{CHOOSE ONE: payeezy || bluepay || card_connect || ipg}</current_gateway>
         <!-- <current_gateway>payeezy</current_gateway> -->
         <payeezy>
+            <gateway>PAYEEZY</gateway>
             <apiKey>{API_KEY}</apiKey>
             <apiSecret>{API_SECRET}</apiSecret>
             <authToken>{AUTH_TOKEN}</authToken>
@@ -32,19 +33,22 @@
             <zeroDollarAuth>FALSE</zeroDollarAuth>
         </payeezy>
 
-        <bayeezy>
+        <bluepay>
+            <gateway>BLUEPAY</gateway>
             <accountId>{ACCOUNT_ID}</accountId>
             <secretKey>{SECRET_KEY}</secretKey>
             <zeroDollarAuth>FALSE</zeroDollarAuth>
-        </bayeezy>
+        </bluepay>
 
         <card_connect>
+            <gateway>CARD_CONNECT</gateway>
             <apiUseRAndPass>{API_USER_AND_PASS}</apiUseRAndPass>
             <merchantId>{MERCHANT_ID}</merchantId>
             <zeroDollarAuth>FALSE</zeroDollarAuth>
         </card_connect>
 
         <ipg>
+            <gateway>IPG</gateway>
             <apiKey>{API_KEY}</apiKey>
             <apiSecret>{API_SECRET}</apiSecret>
             <zeroDollarAuth>FALSE</zeroDollarAuth>
