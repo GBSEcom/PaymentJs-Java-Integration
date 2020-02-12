@@ -25,30 +25,29 @@
         <current_gateway>{CHOOSE ONE: payeezy || bluepay || card_connect || ipg}</current_gateway>
         <!-- <current_gateway>payeezy</current_gateway> -->
         <payeezy>
-            <api_key>{API_KEY}</api_key>
-            <api_secret>{API_SECRET}</api_secret>
-            <auth_token>{AUTH_TOKEN}</auth_token>
-            <transarmor_token>{TA_TOKEN}</transarmor_token>
-            <zero_dollar_auth>FALSE</zero_dollar_auth>
+            <apiKey>{API_KEY}</apiKey>
+            <apiSecret>{API_SECRET}</apiSecret>
+            <authToken>{AUTH_TOKEN}</authToken>
+            <transarmorToken>{TA_TOKEN}</transarmorToken>
+            <zeroDollarAuth>FALSE</zeroDollarAuth>
         </payeezy>
 
         <bayeezy>
-            <account_id>{ACCOUNT_ID}</account_id>
-            <secret_key>{SECRET_KEY}</secret_key>
-            <zero_dollar_auth>FALSE</zero_dollar_auth>
+            <accountId>{ACCOUNT_ID}</accountId>
+            <secretKey>{SECRET_KEY}</secretKey>
+            <zeroDollarAuth>FALSE</zeroDollarAuth>
         </bayeezy>
 
         <card_connect>
-            <api_user>{API_USER}</api_user>
-            <api_pass>{API_USER}</api_pass>
-            <merchant_id>{MERCHANT_ID}</merchant_id>
-            <zero_dollar_auth>FALSE</zero_dollar_auth>
+            <apiUseRAndPass>{API_USER_AND_PASS}</apiUseRAndPass>
+            <merchantId>{MERCHANT_ID}</merchantId>
+            <zeroDollarAuth>FALSE</zeroDollarAuth>
         </card_connect>
 
         <ipg>
-            <api_key>{API_KEY}</api_key>
-            <api_secret>{API_SECRET}</api_secret>
-            <zero_dollar_auth>FALSE</zero_dollar_auth>
+            <apiKey>{API_KEY}</apiKey>
+            <apiSecret>{API_SECRET}</apiSecret>
+            <zeroDollarAuth>FALSE</zeroDollarAuth>
         </ipg>
 
     </gateway>
