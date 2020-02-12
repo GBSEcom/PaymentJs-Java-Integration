@@ -1,4 +1,4 @@
-package com.fiserv.paymentjs_java_integration.auth;
+package com.fiserv.paymentjs_java_integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,9 +1,9 @@
-package com.fiserv.paymentjs_java_integration.controller;
+package com.fiserv.paymentjs_java_integration;
 
-import com.fiserv.paymentjs_java_integration.auth.Auth;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;

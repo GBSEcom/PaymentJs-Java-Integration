@@ -161,4 +161,3 @@ const onCreate = (paymentForm) => {
 };
 
 window.firstdata.createPaymentForm(config, hooks, onCreate);
-
