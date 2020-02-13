@@ -1,5 +1,6 @@
 package com.fiserv.paymentjs_java_integration;
 
+import org.json.JSONException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,7 @@ public class MainPageController {
     }
 
     @RequestMapping(value = "/auth", method = {RequestMethod.POST})
-    public ResponseEntity<?> auth() throws IOException, NoSuchAlgorithmException, InvalidKeyException {
+    public ResponseEntity<?> auth() throws IOException, NoSuchAlgorithmException, InvalidKeyException, JSONException {
         return new Auth().exe();
     }
 }
