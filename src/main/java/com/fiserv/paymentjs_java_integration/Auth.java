@@ -186,7 +186,8 @@ public class Auth {
 
         connection.disconnect();
 
-        return ResponseEntity.ok("{\"response\": \"It works \"}");
+        //Return client token and publicKeyBase64 public rsa key view callback
+        return ResponseEntity.ok(callback_data.toString());
     }
 
 }
