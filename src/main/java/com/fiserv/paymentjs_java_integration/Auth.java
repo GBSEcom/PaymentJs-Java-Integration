@@ -3,17 +3,17 @@ package com.fiserv.paymentjs_java_integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.HmacAlgorithms;
+import org.apache.commons.codec.digest.HmacUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.http.ResponseEntity;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -51,21 +51,14 @@ public class Auth {
         return "Ok";
     }
 
-    private String hash_hmac(String message, String api_secret_key) throws NoSuchAlgorithmException, InvalidKeyException {
-        String hmac = "";
+    public String genHmac(String msg, String secret) {
+        HmacAlgorithms algorithm = HmacAlgorithms.HMAC_SHA_256;
+        HmacUtils hmacUtils = new HmacUtils(algorithm, secret);
+        Hex hexEncoder = new Hex();
 
-        Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secret = new SecretKeySpec(api_secret_key.getBytes(), "HmacSH256");
-        mac.init(secret);
-        byte[] digest = mac.doFinal(message.getBytes());
-        BigInteger hash = new BigInteger(1, digest);
-        hmac = hash.toString(16);
-
-        if (hmac.length() % 2 != 0) {
-            hmac = "0" + hmac;
-        }
-
-        return hmac;
+        byte[] binaryEncodedHash = hmacUtils.hmac(msg);
+        byte[] hexEncodedHash = hexEncoder.encode(binaryEncodedHash);
+        return Base64.encodeBase64String(hexEncodedHash);
     }
 
     private HashMap<String, String> prepareHeaders(HashMap<String, JsonNode> credentials) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
@@ -74,7 +67,7 @@ public class Auth {
         //Json Payload
         JsonNode gateway_credentials = credentials.get("gateway_credentials");
 
-        long timestamp = System.currentTimeMillis() * 1000;
+        long timestamp = System.currentTimeMillis();
         long nonce = timestamp + new Random().nextInt();
 
         JsonNode pjsv2_credentials = credentials.get("pjsv2_credentials");
@@ -82,12 +75,13 @@ public class Auth {
         String api_secret_key = pjsv2_credentials.findValue("api_secret").asText();
 
         //message components
-        String message = api_key + nonce + timestamp + gateway_credentials.toPrettyString();
-        String message_signature = Base64.getEncoder().encodeToString(this.hash_hmac(message, api_secret_key).getBytes());
+        String message = api_key + nonce + timestamp + gateway_credentials.toString();
+
+        String message_signature = this.genHmac(message, api_secret_key);
 
         map.put("Api-Key", api_key);
         map.put("Content-Type", "application/json");
-        map.put("Content-Length", Integer.toString(gateway_credentials.toString().length()));
+        map.put("Content-Length", Integer.toString(gateway_credentials.asText().length()));
         map.put("Message-Signature", message_signature);
         map.put("Nonce", Long.toString(nonce));
         map.put("Timestamp", Long.toString(timestamp));
@@ -100,7 +94,6 @@ public class Auth {
         //API service URL
         String service_url = credentials.get("service_url").asText();
 
-
         //Json Payload
         JsonNode gateway_credentials = credentials.get("gateway_credentials");
 
@@ -110,14 +103,12 @@ public class Auth {
         connection.setDoOutput(true);
         connection.setInstanceFollowRedirects(false);
         connection.setRequestMethod("POST");
-
+        connection.setRequestProperty( "charset", "utf-8");
         headers.forEach(connection::setRequestProperty);
 
-        connection.setUseCaches(false);
-        try (DataOutputStream wr = new DataOutputStream( connection.getOutputStream())) {
-            wr.write(gateway_credentials.toString().getBytes(StandardCharsets.UTF_8));
-        }
+        DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
 
+        wr.write(gateway_credentials.toString().getBytes());
         return connection;
     }
 
@@ -132,17 +123,15 @@ public class Auth {
             System.out.println("Invalid credentials setup. Info: "+validation_response);
             return null;
         }
-
         //Send HTTP post request to payment.js server and check response
         HttpURLConnection postResponse = this.post(credentials);
         if (200 != postResponse.getResponseCode()){
-            System.out.println("HTTP post request failed. Info: "+postResponse.getResponseMessage());
+            System.out.println("HTTP post request failed. Info: "+postResponse.getResponseCode()+": "+postResponse.getResponseMessage());
             return null;
         }
 
         //Get response headers from Payment.js server
         Map<String, List<String>> response_headers = postResponse.getHeaderFields();
-
 
         return ResponseEntity.ok("{\"response\": \"It works \"}");
     }
