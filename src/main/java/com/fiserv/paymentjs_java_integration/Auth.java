@@ -51,7 +51,7 @@ public class Auth {
         return "Ok";
     }
 
-    public String genHmac(String msg, String secret) {
+    private String genHmac(String msg, String secret) {
         HmacAlgorithms algorithm = HmacAlgorithms.HMAC_SHA_256;
         HmacUtils hmacUtils = new HmacUtils(algorithm, secret);
         Hex hexEncoder = new Hex();
@@ -61,11 +61,15 @@ public class Auth {
         return Base64.encodeBase64String(hexEncodedHash);
     }
 
+    private String stripBooleanQuotes(String input){
+        return input.replaceAll("\"(?i)true\"","true").replaceAll("\"(?i)false\"","false");
+    }
+
     private HashMap<String, String> prepareHeaders(HashMap<String, JsonNode> credentials) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
         HashMap<String, String> map = new HashMap<String, String>();
 
         //Json Payload
-        JsonNode gateway_credentials = credentials.get("gateway_credentials");
+        String gateway_credentials = this.stripBooleanQuotes(credentials.get("gateway_credentials").toString());
 
         long timestamp = System.currentTimeMillis();
         long nonce = timestamp + new Random().nextInt();
@@ -75,13 +79,13 @@ public class Auth {
         String api_secret_key = pjsv2_credentials.findValue("api_secret").asText();
 
         //message components
-        String message = api_key + nonce + timestamp + gateway_credentials.toString();
+        String message = api_key + nonce + timestamp + gateway_credentials;
 
         String message_signature = this.genHmac(message, api_secret_key);
 
         map.put("Api-Key", api_key);
         map.put("Content-Type", "application/json");
-        map.put("Content-Length", Integer.toString(gateway_credentials.asText().length()));
+        map.put("Content-Length", Integer.toString(gateway_credentials.length()));
         map.put("Message-Signature", message_signature);
         map.put("Nonce", Long.toString(nonce));
         map.put("Timestamp", Long.toString(timestamp));
@@ -95,7 +99,7 @@ public class Auth {
         String service_url = credentials.get("service_url").asText();
 
         //Json Payload
-        JsonNode gateway_credentials = credentials.get("gateway_credentials");
+        String gateway_credentials = this.stripBooleanQuotes(credentials.get("gateway_credentials").toString());
 
         HashMap<String, String> headers = this.prepareHeaders(credentials);
 
@@ -108,7 +112,7 @@ public class Auth {
 
         DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
 
-        wr.write(gateway_credentials.toString().getBytes());
+        wr.write(gateway_credentials.getBytes());
         return connection;
     }
 
@@ -129,6 +133,7 @@ public class Auth {
             System.out.println("HTTP post request failed. Info: "+postResponse.getResponseCode()+": "+postResponse.getResponseMessage());
             return null;
         }
+        System.out.println("HTTP post request Successful "+postResponse.getResponseCode()+": "+postResponse.getResponseMessage());
 
         //Get response headers from Payment.js server
         Map<String, List<String>> response_headers = postResponse.getHeaderFields();
