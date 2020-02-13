@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class Auth {
@@ -81,7 +79,7 @@ public class Auth {
         return input.replaceAll("\"(?i)true\"","true").replaceAll("\"(?i)false\"","false");
     }
 
-    private HashMap<String, String> prepareHeaders(HashMap<String, JsonNode> credentials) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
+    private HashMap<String, String> prepareHeaders(HashMap<String, JsonNode> credentials) {
         HashMap<String, String> map = new HashMap<String, String>();
 
         //Json Payload
@@ -109,7 +107,7 @@ public class Auth {
 
     }
 
-    public HttpURLConnection post(HashMap<String, JsonNode> credentials) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+    public HttpURLConnection post(HashMap<String, JsonNode> credentials) throws IOException {
 
         //API service URL
         String service_url = credentials.get("service_url").asText();
@@ -155,7 +153,7 @@ public class Auth {
         return new JSONObject(response_map);
     }
 
-    public ResponseEntity<String> exe() throws IOException, InvalidKeyException, NoSuchAlgorithmException, JSONException {
+    public ResponseEntity<String> exe() throws IOException, JSONException {
 
         //Initialize timestamp and nonce values
         this.setTimestampAndNonce();
@@ -180,7 +178,7 @@ public class Auth {
 
         //Nonce validation
         if (!String.valueOf(this.getNonce()).equals(connection.getHeaderField("Nonce"))){
-            System.out.println("Nonce validation failed ");
+            System.out.println("Nonce validation failed.");
             return null;
         }
 
@@ -188,7 +186,8 @@ public class Auth {
 
         connection.disconnect();
 
-        return ResponseEntity.ok("{\"response\": \"It works \"}");
+        //Return client token and publicKeyBase64 public rsa key view callback
+        return ResponseEntity.ok(callback_data.toString());
     }
 
 }
