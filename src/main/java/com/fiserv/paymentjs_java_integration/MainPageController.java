@@ -19,7 +19,7 @@ public class MainPageController {
     }
 
     @RequestMapping(value = "/auth", method = {RequestMethod.POST})
-    public ResponseEntity<?> auth() throws IOException, NoSuchAlgorithmException, InvalidKeyException, JSONException {
+    public ResponseEntity<?> auth() throws IOException, JSONException {
         return new Auth().exe();
     }
 }
