@@ -1,10 +1,6 @@
 package com.fiserv.paymentjs_java_integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.HmacAlgorithms;
-import org.apache.commons.codec.digest.HmacUtils;
-import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
@@ -33,25 +29,11 @@ public class Auth {
         return this.nonce;
     }
 
-    private String genHmac(String msg, String secret) {
-        HmacAlgorithms algorithm = HmacAlgorithms.HMAC_SHA_256;
-        HmacUtils hmacUtils = new HmacUtils(algorithm, secret);
-        Hex hexEncoder = new Hex();
-
-        byte[] binaryEncodedHash = hmacUtils.hmac(msg);
-        byte[] hexEncodedHash = hexEncoder.encode(binaryEncodedHash);
-        return Base64.encodeBase64String(hexEncodedHash);
-    }
-
-    private String stripBooleanQuotes(String input){
-        return input.replaceAll("\"(?i)true\"","true").replaceAll("\"(?i)false\"","false");
-    }
-
     private HashMap<String, String> prepareHeaders(HashMap<String, JsonNode> credentials) {
         HashMap<String, String> map = new HashMap<String, String>();
 
         //Json Payload
-        String gateway_credentials = this.stripBooleanQuotes(credentials.get("gateway_credentials").toString());
+        String gateway_credentials = StringUtil.formatBooleans(credentials.get("gateway_credentials").toString());
 
         long timestamp = this.getTimestamp();
         long nonce = this.getNonce();
@@ -63,7 +45,7 @@ public class Auth {
         //message components
         String message = api_key + nonce + timestamp + gateway_credentials;
 
-        String message_signature = this.genHmac(message, api_secret_key);
+        String message_signature = StringUtil.genHmac(message, api_secret_key);
 
         map.put("Api-Key", api_key);
         map.put("Content-Type", "application/json");
@@ -81,7 +63,7 @@ public class Auth {
         String service_url = credentials.get("service_url").asText();
 
         //Json Payload
-        String gateway_credentials = this.stripBooleanQuotes(credentials.get("gateway_credentials").toString());
+        String gateway_credentials = StringUtil.formatBooleans(credentials.get("gateway_credentials").toString());
 
         HashMap<String, String> headers = this.prepareHeaders(credentials);
 
@@ -163,13 +145,13 @@ public class Auth {
             return null;
         }
 
-        //Write client token to log file
+        //Write clientToken to log file
         String callback_data = this.getCallBackData(connection).toString();
         this.writeToLog(credentials.get("payment_log_filepath").asText(), callback_data);
 
         connection.disconnect();
 
-        //Return client token and publicKeyBase64 public rsa key view callback
+        //clientToken and publicKeyBase64 public rsa key callback
         return ResponseEntity.ok(callback_data);
     }
 }
