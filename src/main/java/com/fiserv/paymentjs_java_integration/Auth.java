@@ -14,11 +14,13 @@ import org.springframework.http.ResponseEntity;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Auth {
 
     private static final String GATEWAY_AND_HOST_CREDENTIALS_FILE_PATH = "src/main/config.xml";
+    private static final String PAYMENT_LOG_FILE_PATH = "src/main/payment-log";
 
     private long timestamp;
     private long nonce;
@@ -153,6 +155,18 @@ public class Auth {
         return new JSONObject(response_map);
     }
 
+    private void writeToLog(String callback_data) throws IOException {
+        String date = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+        File log_file = new File(PAYMENT_LOG_FILE_PATH+"/"+date+".log");
+        if (log_file.createNewFile()) {
+            System.out.println("File created: " + log_file.getName());
+        }
+
+        FileWriter wr = new FileWriter(log_file, true);
+        wr.write(callback_data+"\n");
+        wr.close();
+    }
+
     public ResponseEntity<String> exe() throws IOException, JSONException {
 
         //Initialize timestamp and nonce values
@@ -182,12 +196,13 @@ public class Auth {
             return null;
         }
 
-        JSONObject callback_data = this.getCallBackData(connection);
+        //Write client token to log file
+        String callback_data = this.getCallBackData(connection).toString();
+        this.writeToLog(callback_data);
 
         connection.disconnect();
 
         //Return client token and publicKeyBase64 public rsa key view callback
-        return ResponseEntity.ok(callback_data.toString());
+        return ResponseEntity.ok(callback_data);
     }
-
 }
