@@ -1,10 +1,6 @@
 package com.fiserv.paymentjs_java_integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.HmacAlgorithms;
-import org.apache.commons.codec.digest.HmacUtils;
-import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Auth {
-
-    private static final String PAYMENT_LOG_FILE_PATH = "src/main/payment-log";
 
     private long timestamp;
     private long nonce;
@@ -35,25 +29,17 @@ public class Auth {
         return this.nonce;
     }
 
-    private String genHmac(String msg, String secret) {
-        HmacAlgorithms algorithm = HmacAlgorithms.HMAC_SHA_256;
-        HmacUtils hmacUtils = new HmacUtils(algorithm, secret);
-        Hex hexEncoder = new Hex();
-
-        byte[] binaryEncodedHash = hmacUtils.hmac(msg);
-        byte[] hexEncodedHash = hexEncoder.encode(binaryEncodedHash);
-        return Base64.encodeBase64String(hexEncodedHash);
-    }
-
-    private String stripBooleanQuotes(String input){
-        return input.replaceAll("\"(?i)true\"","true").replaceAll("\"(?i)false\"","false");
-    }
-
+    /**
+     * Create message signature and create post request headers
+     *
+     * @param credentials HashMap of credentials
+     * @return Headers paired with appropriate Json strings
+     */
     private HashMap<String, String> prepareHeaders(HashMap<String, JsonNode> credentials) {
         HashMap<String, String> map = new HashMap<String, String>();
 
         //Json Payload
-        String gateway_credentials = this.stripBooleanQuotes(credentials.get("gateway_credentials").toString());
+        String gateway_credentials = StringUtil.formatBooleans(credentials.get("gateway_credentials").toString());
 
         long timestamp = this.getTimestamp();
         long nonce = this.getNonce();
@@ -65,7 +51,8 @@ public class Auth {
         //message components
         String message = api_key + nonce + timestamp + gateway_credentials;
 
-        String message_signature = this.genHmac(message, api_secret_key);
+        //generate hmac
+        String message_signature = StringUtil.genHmac(message, api_secret_key);
 
         map.put("Api-Key", api_key);
         map.put("Content-Type", "application/json");
@@ -74,16 +61,22 @@ public class Auth {
         map.put("Nonce", Long.toString(nonce));
         map.put("Timestamp", Long.toString(timestamp));
         return map;
-
     }
 
+    /**
+     * Connect to Payment.js server, set headers, and post json payload
+     *
+     * @param credentials HashMap of credentials
+     * @return Connection to Payment.js server
+     * @throws IOException Post request failed
+     */
     public HttpURLConnection post(HashMap<String, JsonNode> credentials) throws IOException {
 
         //API service URL
         String service_url = credentials.get("service_url").asText();
 
         //Json Payload
-        String gateway_credentials = this.stripBooleanQuotes(credentials.get("gateway_credentials").toString());
+        String gateway_credentials = StringUtil.formatBooleans(credentials.get("gateway_credentials").toString());
 
         HashMap<String, String> headers = this.prepareHeaders(credentials);
 
@@ -92,6 +85,8 @@ public class Auth {
         connection.setInstanceFollowRedirects(false);
         connection.setRequestMethod("POST");
         connection.setRequestProperty( "charset", "utf-8");
+
+        //set headers paired with Json string
         headers.forEach(connection::setRequestProperty);
 
         DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
@@ -100,6 +95,14 @@ public class Auth {
         return connection;
     }
 
+    /**
+     * Receive clientToken and publicKeyBase64 rsa key from Payment.js server
+     *
+     * @param connection Connection to Payment.js server
+     * @return JsonObject containing clientToken and publicKeyBase64 rsa key
+     * @throws IOException Request failed
+     * @throws JSONException Invalid Json string
+     */
     private JSONObject getCallBackData(HttpURLConnection connection) throws IOException, JSONException {
 
         //Get client token from response header
@@ -123,18 +126,36 @@ public class Auth {
         return new JSONObject(response_map);
     }
 
-    private void writeToLog(String callback_data) throws IOException {
+    /**
+     *
+     * Write clientToken and publicKeyBase64 rsa key to payment log
+     *
+     * @param file_path Path to payment log directory
+     * @param callback_data clientToken and publicKeyBase64
+     * @throws IOException File not found
+     */
+    private void writeToLog(String file_path, String callback_data) throws IOException {
+
+        //Create new daily log file if not exists
         String date = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
-        File log_file = new File(PAYMENT_LOG_FILE_PATH+"/"+date+".log");
+        File log_file = new File(file_path+"/"+date+".log");
         if (log_file.createNewFile()) {
             System.out.println("File created: " + log_file.getName());
         }
 
+        //write clientToken and publicKeyBase64 public rsa key to daily log file
         FileWriter wr = new FileWriter(log_file, true);
         wr.write(callback_data+"\n");
         wr.close();
     }
 
+    /**
+     * Execute Payment.js process flow
+     *
+     * @return ResponseEntity.ok() | null
+     * @throws IOException File not found/Request failed
+     * @throws JSONException Invalid Json string
+     */
     public ResponseEntity<String> exe() throws IOException, JSONException {
 
         //Initialize timestamp and nonce values
@@ -165,13 +186,13 @@ public class Auth {
             return null;
         }
 
-        //Write client token to log file
+        //Write clientToken to log file
         String callback_data = this.getCallBackData(connection).toString();
-        this.writeToLog(callback_data);
+        this.writeToLog(credentials.get("payment_log_filepath").asText(), callback_data);
 
         connection.disconnect();
 
-        //Return client token and publicKeyBase64 public rsa key view callback
+        //clientToken and publicKeyBase64 public rsa key callback
         return ResponseEntity.ok(callback_data);
     }
 }
