@@ -10,9 +10,9 @@ https://docs.paymentjs.firstdata.com/
 
 ## Getting Started
 
-Set up is handled entirely in config.xml:
+Set up is handled entirely in /src/main/resources/config.xml:
 
-1) Add file path to payment-log (default location: main/payment-log)
+1) Add file path to payment-log (default location: /src/main/payment-log)
 
 2) Select host (customer sandbox or production)
 
