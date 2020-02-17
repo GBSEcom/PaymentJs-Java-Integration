@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.util.ResourceUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,8 @@ public class ConfigLoader {
         HashMap<String, JsonNode> map = new HashMap<String, JsonNode>();
 
         JsonNode current_gateway = credentials.findValue("current_gateway");
+
+        map.put("payment_log_filepath", credentials.findValue("file_path"));
         map.put("gateway", current_gateway);
         map.put("service_url", credentials.findValue("service_url"));
         map.put("pjsv2_credentials", credentials.findValue("credentials"));
@@ -36,6 +39,12 @@ public class ConfigLoader {
                 return entry.getKey();
             }
         }
+
+        File payment_log = new File(map.get("payment_log_filepath").asText());
+        if (!payment_log.exists()){
+            return "Log file \""+payment_log.toString()+"\" not found.";
+        }
+
         return "200";
     }
 }

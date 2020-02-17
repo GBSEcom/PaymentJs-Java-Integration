@@ -17,8 +17,6 @@ import java.util.*;
 
 public class Auth {
 
-    private static final String PAYMENT_LOG_FILE_PATH = "src/main/payment-log";
-
     private long timestamp;
     private long nonce;
 
@@ -123,9 +121,9 @@ public class Auth {
         return new JSONObject(response_map);
     }
 
-    private void writeToLog(String callback_data) throws IOException {
+    private void writeToLog(String file_path, String callback_data) throws IOException {
         String date = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
-        File log_file = new File(PAYMENT_LOG_FILE_PATH+"/"+date+".log");
+        File log_file = new File(file_path+"/"+date+".log");
         if (log_file.createNewFile()) {
             System.out.println("File created: " + log_file.getName());
         }
@@ -167,7 +165,7 @@ public class Auth {
 
         //Write client token to log file
         String callback_data = this.getCallBackData(connection).toString();
-        this.writeToLog(callback_data);
+        this.writeToLog(credentials.get("payment_log_filepath").asText(), callback_data);
 
         connection.disconnect();
 
