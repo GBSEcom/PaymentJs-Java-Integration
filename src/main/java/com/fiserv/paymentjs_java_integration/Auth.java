@@ -1,8 +1,6 @@
 package com.fiserv.paymentjs_java_integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -19,7 +17,6 @@ import java.util.*;
 
 public class Auth {
 
-    private static final String GATEWAY_AND_HOST_CREDENTIALS_FILE_PATH = "src/main/config.xml";
     private static final String PAYMENT_LOG_FILE_PATH = "src/main/payment-log";
 
     private long timestamp;
@@ -36,35 +33,6 @@ public class Auth {
 
     private long getNonce(){
         return this.nonce;
-    }
-
-    private JsonNode loadConfig() throws IOException {
-        ObjectMapper objectMapper = new XmlMapper();
-        return objectMapper.readTree(new File(GATEWAY_AND_HOST_CREDENTIALS_FILE_PATH));
-    }
-
-    private HashMap<String, JsonNode> loadCredentials() throws IOException {
-
-        JsonNode credentials = this.loadConfig();
-        HashMap<String, JsonNode> map = new HashMap<String, JsonNode>();
-
-        JsonNode current_gateway = credentials.findValue("current_gateway");
-        map.put("gateway", current_gateway);
-        //map.put("host", credentials.findValue("host_name"));
-        map.put("service_url", credentials.findValue("service_url"));
-        map.put("pjsv2_credentials", credentials.findValue("credentials"));
-        map.put("gateway_credentials", credentials.findValue(current_gateway.asText()));
-
-        return map;
-    }
-
-    private String validateCredentials(HashMap<String, JsonNode> map){
-        for (Map.Entry<String, JsonNode> entry : map.entrySet()) {
-            if (null == entry.getValue()){
-                return entry.getKey();
-            }
-        }
-        return "Ok";
     }
 
     private String genHmac(String msg, String secret) {
@@ -173,11 +141,12 @@ public class Auth {
         this.setTimestampAndNonce();
 
         //Load credentials from config.xml
-        HashMap<String, JsonNode> credentials = this.loadCredentials();
+        ConfigLoader config = new ConfigLoader();
+        HashMap<String, JsonNode> credentials = config.loadCredentials();
 
         //Validate credentials
-        String validation_response = this.validateCredentials(credentials);
-        if(!"Ok".equals(validation_response)){
+        String validation_response = config.validateCredentials(credentials);
+        if(!"200".equals(validation_response)){
             System.out.println("Invalid credentials setup. Info: "+validation_response);
             return null;
         }
