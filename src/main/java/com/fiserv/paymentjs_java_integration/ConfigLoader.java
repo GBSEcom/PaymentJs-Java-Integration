@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConfigInterface {
+public class ConfigLoader {
 
     private JsonNode loadConfig() throws IOException {
         ObjectMapper objectMapper = new XmlMapper();
@@ -38,5 +38,4 @@ public class ConfigInterface {
         }
         return "200";
     }
-
 }

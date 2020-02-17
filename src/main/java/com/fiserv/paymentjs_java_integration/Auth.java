@@ -141,7 +141,7 @@ public class Auth {
         this.setTimestampAndNonce();
 
         //Load credentials from config.xml
-        ConfigInterface config = new ConfigInterface();
+        ConfigLoader config = new ConfigLoader();
         HashMap<String, JsonNode> credentials = config.loadCredentials();
 
         //Validate credentials
