@@ -29,6 +29,12 @@ public class Auth {
         return this.nonce;
     }
 
+    /**
+     * Create message signature and create post request headers
+     *
+     * @param credentials HashMap of credentials
+     * @return Headers paired with appropriate Json strings
+     */
     private HashMap<String, String> prepareHeaders(HashMap<String, JsonNode> credentials) {
         HashMap<String, String> map = new HashMap<String, String>();
 
@@ -45,6 +51,7 @@ public class Auth {
         //message components
         String message = api_key + nonce + timestamp + gateway_credentials;
 
+        //generate hmac
         String message_signature = StringUtil.genHmac(message, api_secret_key);
 
         map.put("Api-Key", api_key);
@@ -54,9 +61,15 @@ public class Auth {
         map.put("Nonce", Long.toString(nonce));
         map.put("Timestamp", Long.toString(timestamp));
         return map;
-
     }
 
+    /**
+     * Connect to Payment.js server, set headers, and post json payload
+     *
+     * @param credentials HashMap of credentials
+     * @return Connection to Payment.js server
+     * @throws IOException Post request failed
+     */
     public HttpURLConnection post(HashMap<String, JsonNode> credentials) throws IOException {
 
         //API service URL
@@ -72,6 +85,8 @@ public class Auth {
         connection.setInstanceFollowRedirects(false);
         connection.setRequestMethod("POST");
         connection.setRequestProperty( "charset", "utf-8");
+
+        //set headers paired with Json string
         headers.forEach(connection::setRequestProperty);
 
         DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
@@ -80,6 +95,14 @@ public class Auth {
         return connection;
     }
 
+    /**
+     * Receive clientToken and publicKeyBase64 rsa key from Payment.js server
+     *
+     * @param connection Connection to Payment.js server
+     * @return JsonObject containing clientToken and publicKeyBase64 rsa key
+     * @throws IOException Request failed
+     * @throws JSONException Invalid Json string
+     */
     private JSONObject getCallBackData(HttpURLConnection connection) throws IOException, JSONException {
 
         //Get client token from response header
@@ -103,18 +126,36 @@ public class Auth {
         return new JSONObject(response_map);
     }
 
+    /**
+     *
+     * Write clientToken and publicKeyBase64 rsa key to payment log
+     *
+     * @param file_path Path to payment log directory
+     * @param callback_data clientToken and publicKeyBase64
+     * @throws IOException File not found
+     */
     private void writeToLog(String file_path, String callback_data) throws IOException {
+
+        //Create new daily log file if not exists
         String date = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
         File log_file = new File(file_path+"/"+date+".log");
         if (log_file.createNewFile()) {
             System.out.println("File created: " + log_file.getName());
         }
 
+        //write clientToken and publicKeyBase64 public rsa key to daily log file
         FileWriter wr = new FileWriter(log_file, true);
         wr.write(callback_data+"\n");
         wr.close();
     }
 
+    /**
+     * Execute Payment.js process flow
+     *
+     * @return ResponseEntity.ok() | null
+     * @throws IOException File not found/Request failed
+     * @throws JSONException Invalid Json string
+     */
     public ResponseEntity<String> exe() throws IOException, JSONException {
 
         //Initialize timestamp and nonce values
