@@ -11,5 +11,4 @@ public class PaymentjsJavaIntegrationApplication {
 		SpringApplication.run(PaymentjsJavaIntegrationApplication.class, args);
 
 	}
-
 }
