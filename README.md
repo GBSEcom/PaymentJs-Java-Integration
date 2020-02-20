@@ -10,7 +10,7 @@ https://docs.paymentjs.firstdata.com/
 
 ## Getting Started
 
-Set up is handled entirely in /src/main/resources/config.xml:
+Server set up is handled entirely in /src/main/resources/config.xml:
 
 1) Add file path to payment-log (default location: /src/main/payment-log)
 
@@ -26,7 +26,12 @@ Current Spring Boot microservice url: http://localhost:7000
 
 Server Port can be adjusted in application.properties.
 
-Example config.xml:
+## Webhook
+
+The webhook endpoints is "/webhook." The webhook as configued in apigee should look like this:
+https://{WEBHOOK_URL}/webhook
+
+## Example config.xml:
 
 <?xml version="1.0" encoding="UTF-8" ?>
 
