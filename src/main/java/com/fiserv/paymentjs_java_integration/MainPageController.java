@@ -33,4 +33,10 @@ public class MainPageController {
     public ResponseEntity<?> auth() throws IOException, JSONException {
         return new Auth().exe();
     }
+
+    @RequestMapping(value = "/webhook", method = {RequestMethod.POST})
+    public String webhook() {
+        Webhook.exe();
+        return "index";
+    }
 }
