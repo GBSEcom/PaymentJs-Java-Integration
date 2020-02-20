@@ -3,8 +3,7 @@ package com.fiserv.paymentjs_java_integration;
 import org.json.JSONException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -13,7 +12,7 @@ public class MainPageController {
 
     /**
      *
-     * Load template on localhost:8080
+     * Load template on localhost:7000 or otherwise specified host
      *
      * @return Main Page
      */
@@ -32,5 +31,18 @@ public class MainPageController {
     @RequestMapping(value = "/auth", method = {RequestMethod.POST})
     public ResponseEntity<?> auth() throws IOException, JSONException {
         return new Auth().exe();
+    }
+
+    /**
+     * Get Json response from webhook. Post client token + payload to log file.
+     *
+     * @return Refresh homepage
+     * @throws IOException config.xml already validated in Auth.java
+     */
+    @RequestMapping(value = "/webhook", method = {RequestMethod.POST})
+    public String webhook(@RequestHeader(value = "Client-Token") String client_token, @RequestBody String body) throws IOException {
+        Webhook webhook = new Webhook();
+        webhook.exe(client_token,body);
+        return "index";
     }
 }

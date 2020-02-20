@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Auth {
@@ -127,29 +126,6 @@ public class Auth {
     }
 
     /**
-     *
-     * Write clientToken and publicKeyBase64 rsa key to payment log
-     *
-     * @param file_path Path to payment log directory
-     * @param callback_data clientToken and publicKeyBase64
-     * @throws IOException File not found
-     */
-    private void writeToLog(String file_path, String callback_data) throws IOException {
-
-        //Create new daily log file if not exists
-        String date = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
-        File log_file = new File(file_path+"/"+date+".log");
-        if (log_file.createNewFile()) {
-            System.out.println("File created: " + log_file.getName());
-        }
-
-        //write clientToken and publicKeyBase64 public rsa key to daily log file
-        FileWriter wr = new FileWriter(log_file, true);
-        wr.write(callback_data+"\n");
-        wr.close();
-    }
-
-    /**
      * Execute Payment.js process flow
      *
      * @return ResponseEntity.ok() | null
@@ -186,13 +162,11 @@ public class Auth {
             return null;
         }
 
-        //Write clientToken to log file
+        //Get callback data to return in response entity
         String callback_data = this.getCallBackData(connection).toString();
-        this.writeToLog(credentials.get("payment_log_filepath").asText(), callback_data);
 
+        //Disconnect and return callback data
         connection.disconnect();
-
-        //clientToken and publicKeyBase64 public rsa key callback
         return ResponseEntity.ok(callback_data);
     }
 }
