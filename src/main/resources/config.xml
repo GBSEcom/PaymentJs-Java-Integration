@@ -44,7 +44,7 @@
 
         <card_connect>
             <gateway>CARD_CONNECT</gateway>
-            <apiUseRAndPass>{API_USER_AND_PASS}</apiUseRAndPass>
+            <apiUserAndPass>{API_USER_AND_PASS}</apiUserAndPass>
             <merchantId>{MERCHANT_ID}</merchantId>
             <zeroDollarAuth>FALSE</zeroDollarAuth>
         </card_connect>
